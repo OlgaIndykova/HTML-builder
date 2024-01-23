@@ -24,10 +24,11 @@ stdin.on("data", (data) => {
     );
 })
 // stdin.on("data", (data) => {
-//   if (data.toString() === "exit") {
-//       emitter.emit(handle());
+//   if (data.toString() == "exit") {
+//       emitter.emit(data.toString());
+//       console.log("error");
+
 //     };
-//   console.log("error");
 // })
 function handle() {
   console.log("Thank you for your request, our experts will contact you shortly.");
