@@ -71,6 +71,9 @@ fs.readFile(path.join(__dirname, 'template.html'), 'utf-8',
                             if (file.name === 'footer.html') {
                                 content = content.replace("{{footer}}", data);
                             };
+                            if (file.name === 'about.html') {
+                                content = content.replace("{{about}}", data);
+                            };
                             createIndexFile();
                             fs.writeFile(path.join(__dirname, 'project-dist', 'index.html'),
                                 content,
