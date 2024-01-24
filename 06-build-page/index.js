@@ -5,25 +5,83 @@ fs.mkdir(path.join(__dirname, 'project-dist'),
     { recursive: true },
     (err, directory) => {
         if (err) throw err;
-        console.log(directory);
-    });
+        directory;
+        fs.mkdir(path.join(__dirname, 'project-dist', 'assets'),
+            { recursive: true },
+            (err, directory) => {
+                if (err) throw err;
+                directory;
+            });
+    }
+);
 
-fs.readFile(
-    path.join(__dirname, 'template.html'),
-    'utf-8',
+if (path.join(__dirname, 'project-dist')) {
+    fs.readdir(
+        path.join(__dirname, 'styles'),
+        { withFileTypes: true },
+        (err, files) => {
+            if (err) console.log(err);
+            else {
+                files.forEach((file) => {
+                    if (err) {
+                        console.error(err);
+                        return;
+                    }
+                    if (path.extname(path.join(__dirname, 'styles', file.name)) == '.css') {
+                        fs.readFile(
+                            path.join(__dirname, 'styles', file.name),
+                            'utf-8',
+                            (err, data) => {
+                                if (err) throw err;
+                                createCssFile();
+                                fs.appendFile(
+                                    path.join(__dirname, 'project-dist', 'style.css'),
+                                    data.toString(),
+                                    (err) => {
+                                        if (err) throw err;
+                                    },
+                                );
+                            },
+                        );
+                    }
+                });
+            }
+        },
+    );
+}
+let content;
+fs.readFile(path.join(__dirname, 'template.html'), 'utf-8',
     (err, data) => {
         if (err) throw err;
-        createIndexFile();
-        let content;
-        fs.appendFile(
-            path.join(__dirname, 'project-dist', 'index.html'),
-            content = data.toString().replace("{{header}}", "<header></header>").replace("{{articles}}", "<article></article>").replace("{{footer}}", "<footer></footer>"),
-            console.log(content),
-            (err) => {
-                if (err) throw err;
-            },
-        );
-    },
+        content = data.toString();
+        fs.readdir(path.join(__dirname, 'components'), { withFileTypes: true },
+            (err, files) => {
+                if (err)
+                    console.log(err);
+                else {
+                    files.forEach(file => {
+                        const readFile = fs.createReadStream(path.join(__dirname, 'components', file.name), 'utf8');
+                        readFile.on("data", (data) => {
+                            if (file.name === 'header.html') {
+                                content = content.replace("{{header}}", data);
+                            };
+                            if (file.name === 'articles.html') {
+                                content = content.replace("{{articles}}", data);
+                            };
+                            if (file.name === 'footer.html') {
+                                content = content.replace("{{footer}}", data);
+                            };
+                            createIndexFile();
+                            fs.writeFile(path.join(__dirname, 'project-dist', 'index.html'),
+                                content,
+                                (err) => {
+                                    if (err) throw err;
+                                })
+                        })
+                    })
+                }
+            })
+    }
 );
 
 function createIndexFile() {
@@ -45,115 +103,121 @@ function createCssFile() {
     );
 }
 
-fs.readdir(
-    path.join(__dirname, 'styles'),
-    { withFileTypes: true },
-    (err, files) => {
-        if (err) console.log(err);
-        else {
-            files.forEach((file) => {
-                if (err) {
-                    console.error(err);
-                    return;
-                }
-                if (path.extname(path.join(__dirname, 'styles', file.name)) == '.css') {
-                    fs.readFile(
-                        path.join(__dirname, 'styles', file.name),
-                        'utf-8',
-                        (err, data) => {
+fs.mkdir(path.join(__dirname, 'project-dist', 'assets', 'fonts'),
+    { recursive: true },
+    (err) => {
+        if (err) throw err;
+        fs.readdir(path.join(__dirname, 'project-dist', 'assets', 'fonts'),
+            (err, files) => {
+                if (err)
+                    console.log(err);
+                else {
+                    files.forEach(file => {
+                        fs.unlink(path.join(__dirname, 'project-dist', 'assets', 'fonts', file), (err) => {
                             if (err) throw err;
-                            createCssFile();
-                            fs.appendFile(
-                                path.join(__dirname, 'project-dist', 'style.css'),
-                                data.toString(),
-                                console.log(file.name),
-                                (err) => {
-                                    if (err) throw err;
-                                },
-                            );
-                        },
-                    );
-                }
-            });
-        }
-    },
-);
+                        });
 
-// fs.readFile(filePath, (err, result) => {
-//     if (err) { console.log(err); }
-//     console.log(data);
-// });
-// if the readFile function returned a promise, the logic would be  written as below
-// var fileReadandPromise = fs.readFile(filePath);
-// fileReadandPromise.then(console.log, console.error)
-    
-    // fs.mkdir(path.join(__dirname, 'project-dist', 'assets')),
-    //     { recursive: true },
-    //     (err, result) => {
-    //         if (err) throw err;
-    //         console.log("ok");
-    //     };
-    //     console.log(value);
-    //     const res1 = fs.mkdir(path.join(__dirname, 'project-dist', 'assets'));
-    //     res1.then(console.log, console.error);
-// }
-// async function f() {
-//     const value = await createAssetsDir();
-//     // console.log(value);
-    // fs.mkdir(path.join(__dirname, 'project-dist', 'assets', 'fonts')),
-        // { recursive: true },
-        // (err) => {
-            // if (err) throw err;
-            // console.log("ok");
-        // };
-//     fs.readdir(path.join(__dirname, 'project-dist', 'assets', 'fonts'),
-//         (err, files) => {
-//             if (err)
-//                 console.log(err);
-//             else {
-//                 files.forEach(file => {
-//                     fs.unlink(path.join(__dirname, 'project-dist', 'assets', 'fonts', file), (err) => {
-//                         if (err) throw err;
-//                     });
-//                 })
-//             }
-//         });
-//     fs.mkdir(path.join(__dirname, 'project-dist', 'assets', 'img')),
-//         { recursive: true },
-//         (err) => {
-//             if (err) throw err;
-//             console.log("ok");
-//         };
-//     fs.readdir(path.join(__dirname, 'project-dist', 'assets', 'img'),
-//         (err, files) => {
-//             if (err)
-//                 console.log(err);
-//             else {
-//                 files.forEach(file => {
-//                     fs.unlink(path.join(__dirname, 'project-dist', 'assets', 'img', file), (err) => {
-//                         if (err) throw err;
-//                     });
-//                 })
-//             }
-//         })
-//     fs.mkdir(path.join(__dirname, 'project-dist', 'assets', 'svg')),
-//         { recursive: true },
-//         (err) => {
-//             if (err) throw err;
-//             console.log("ok");
-//         };
-//     fs.readdir(path.join(__dirname, 'project-dist', 'assets', 'svg'),
-//         (err, files) => {
-//             if (err)
-//                 console.log(err);
-//             else {
-//                 files.forEach(file => {
-//                     fs.unlink(path.join(__dirname, 'project-dist', 'assets', 'svg', file), (err) => {
-//                         if (err) throw err;
-//                     });
-//                 })
-//             }
-//         })
-//         console.log(value);
-// }
-// f();
+                    })
+                }
+                fs.readdir(path.join(__dirname, 'assets', 'fonts'),
+                    (err, files) => {
+                        if (err)
+                            console.log(err);
+                        else {
+                            files.forEach(file => {
+                                if (err) {
+                                    console.error(err);
+                                    return;
+                                }
+                                fs.copyFile(path.join(__dirname, 'assets', 'fonts', file), path.join(__dirname, 'project-dist', 'assets', 'fonts', file),
+                                    (err) => {
+                                        if (err) {
+                                            console.log("Error Found:", err);
+                                        }
+                                    });
+                            })
+                        }
+                    })
+            });
+    });
+fs.mkdir(path.join(__dirname, 'project-dist', 'assets', 'img'),
+    { recursive: true },
+    (err) => {
+        if (err) throw err;
+        fs.readdir(path.join(__dirname, 'project-dist', 'assets', 'img'),
+            (err, files) => {
+                if (err)
+                    console.log(err);
+                else {
+                    files.forEach(file => {
+                        fs.unlink(path.join(__dirname, 'project-dist', 'assets', 'img', file), (err) => {
+                            if (err) throw err;
+                        });
+                    })
+                }
+                fs.readdir(path.join(__dirname, 'assets', 'img'),
+                    (err, files) => {
+                        if (err)
+                            console.log(err);
+                        else {
+                            files.forEach(file => {
+                                if (err) {
+                                    console.error(err);
+                                    return;
+                                }
+                                fs.copyFile(path.join(__dirname, 'assets', 'img', file), path.join(__dirname, 'project-dist', 'assets', 'img', file),
+                                    (err) => {
+                                        if (err) {
+                                            console.log("Error Found:", err);
+                                        }
+                                    });
+                            })
+                        }
+                    })
+            });
+
+    });
+fs.mkdir(path.join(__dirname, 'project-dist', 'assets', 'svg'),
+    { recursive: true },
+    (err) => {
+        if (err) throw err;
+        fs.readdir(path.join(__dirname, 'project-dist', 'assets', 'svg'),
+            (err, files) => {
+                if (err)
+                    console.log(err);
+                else {
+                    files.forEach(file => {
+                        fs.unlink(path.join(__dirname, 'project-dist', 'assets', 'svg', file), (err) => {
+                            if (err) throw err;
+                        });
+                        fs.copyFile(path.join(__dirname, 'assets', 'svg', file), path.join(__dirname, 'project-dist', 'assets', 'svg', file),
+                            (err) => {
+                                if (err) {
+                                    console.log("Error Found:", err);
+                                }
+                            })
+                    })
+                }
+                fs.readdir(path.join(__dirname, 'assets', 'svg'),
+                    (err, files) => {
+                        if (err)
+                            console.log(err);
+                        else {
+                            files.forEach(file => {
+                                if (err) {
+                                    console.error(err);
+                                    return;
+                                }
+                                fs.copyFile(path.join(__dirname, 'assets', 'svg', file), path.join(__dirname, 'project-dist', 'assets', 'svg', file),
+                                    (err) => {
+                                        if (err) {
+                                            console.log("Error Found:", err);
+                                        }
+                                    });
+                            })
+                        }
+                    })
+            })
+
+    });
+
